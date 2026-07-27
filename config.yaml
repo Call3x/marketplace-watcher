@@ -8,107 +8,120 @@ settings:
   currency: EUR
 
 items:
-  - id: xbox-series-x
-    label: "Xbox Series X"
-    category: electronics
-    adapters: [vinted]   # Leboncoin blocked by DataDome anti-bot, see README
-    keywords: ["xbox series x"]
-    require_all_words: ["xbox", "series", "x"]   # every word must appear in the title
+- id: xbox-series-x
+  label: "Xbox Series X"
+  category: electronics
+  adapters: [vinted]     # Leboncoin blocked by DataDome anti-bot, see README
+  keywords: ["xbox series x"]
+  require_all_words: ["xbox", "series", "x"]     # every word must appear in the title
     # Vinted's search matches loosely (games, controllers, headsets, wheels all
     # come back for "xbox series x") — hard-exclude accessory/game listings so
     # only console listings survive.
-    exclude_keywords:
-      - "manette"       # controller
-      - "controller"
-      - "comando"
-      - "mando"
-      - "casque"        # headset
-      - "volant"        # wheel
-      - "thrustmaster"
-      - "logitech"
-      - "gamesir"
-      - "8bitdo"
-      - "jeu "          # game (fr)
-      - "juego"
-      - "gioco"
-      - "spiel"
-      - "geprint"       # 3D printed accessory
-      - "houder"        # holder (nl)
-      - "clip"
-      - "series s"
-      - "serie s"
-      - "pour xbox"     # "for xbox" — game/accessory phrasing, not the console itself
-      - "for xbox"
-      - "per xbox"
-      - "für xbox"
-      - "para xbox"
+  exclude_keywords:
+  - "manette"           # controller
+  - "controller"
+  - "comando"
+  - "mando"
+  - "casque"            # headset
+  - "volant"            # wheel
+  - "thrustmaster"
+  - "logitech"
+  - "gamesir"
+  - "8bitdo"
+  - "jeu "              # game (fr)
+  - "juego"
+  - "gioco"
+  - "spiel"
+  - "geprint"           # 3D printed accessory
+  - "houder"            # holder (nl)
+  - "clip"
+  - "series s"
+  - "serie s"
+  - "pour xbox"         # "for xbox" — game/accessory phrasing, not the console itself
+  - "for xbox"
+  - "per xbox"
+  - "für xbox"
+  - "para xbox"
       # Common game titles that otherwise slip through (extend this list as
       # false positives show up — a full game-title blocklist doesn't scale,
       # but the frequent offenders are worth naming).
-      - "elden ring"
-      - "resident evil"
-      - "ea sports"
-      - "fc 24"
-      - "fc 25"
-      - "call of duty"
-      - "nba 2k"
-      - "monster hunter"
-      - "monster energy supercross"
-      - "dragon's dogma"
-      - "indiana jones"
-      - "just dance"
-      - "wrc generations"
-      - "forza"
-      - "rainbow six"
-      - "farming simulator"
-      - "harry potter"
-      - "callisto protocol"
-    price_min: 0
-    price_max: 350
-    condition: ["like_new", "good"]   # adapter maps this to site-specific condition filters
+  - "elden ring"
+  - "resident evil"
+  - "ea sports"
+  - "fc 24"
+  - "fc 25"
+  - "call of duty"
+  - "nba 2k"
+  - "monster hunter"
+  - "monster energy supercross"
+  - "dragon's dogma"
+  - "indiana jones"
+  - "just dance"
+  - "wrc generations"
+  - "forza"
+  - "rainbow six"
+  - "farming simulator"
+  - "harry potter"
+  - "callisto protocol"
+  price_min: 0
+  price_max: 350
+  condition: ["like_new", "good"]     # adapter maps this to site-specific condition filters
 
-  - id: watches-seiko-casio
-    label: "Seiko / Casio watches (date, day-date complications)"
-    category: watches
-    adapters: [vinted]   # Leboncoin blocked by DataDome anti-bot, see README
-    keywords: ["seiko", "casio"]
-    keyword_mode: any        # match if ANY keyword present
-    # Both brands also make calculators, keyboards, cameras — require a
-    # watch-indicating word in the title too, or the brand name alone.
-    require_any_words: ["montre", "watch", "orologio", "uhr", "reloj", "g-shock", "gshock", "relogio", "relógio"]
-    detail_keywords: ["date", "day-date", "daydate", "automatic", "automatique", "automatico"]
-    detail_keyword_mode: any # at least one detail keyword should appear too (soft filter, used for ranking not hard exclude)
-    exclude_keywords:
-      - "digital"
-      - "montre connectée"
-      - "smartwatch"
-      - "réplique"
-      - "fake"
-      - "calculat"       # calculator (fr/es/it all share this stem)
-      - "taschenrechner" # calculator (de)
-      - "rekenmachine"   # calculator (nl)
-      - "teclado"        # keyboard (instrument)
-      - "piano"
-      - "fotocamera"     # camera
-      - "graph 90"       # graphing calculator model
-      - "fx-8"           # calculator model prefix
-      - "fx 8"
-      - "fx-9"
-    price_min: 0
-    price_max: 100
-
-  - id: bmw-330i-f30-lci
-    label: "BMW 330i F30 LCI (2017-2019)"
-    category: cars
-    adapters: [autoscout24]   # La Centrale / Leboncoin Auto blocked by DataDome, see README
-    make: bmw
-    model: "330i"
-    body: f30
-    year_min: 2017
-    year_max: 2019
-    lci_only: true            # facelift only, exclude pre-LCI F30
-    price_min: 15000
-    price_max: 19000
-    mileage_max_km: 100000
-    preferred_options: ["m sport", "pack m", "xdrive", "head-up", "toit ouvrant", "harman kardon"]
-    exclude_keywords: ["accidenté", "salvage", "pour pièces", "non roulant"]
+- id: watches-seiko-casio
+  label: Seiko / Casio watches (date, day-date complications)
+  category: watches
+  adapters:
+  - vinted
+  keywords:
+  - seiko
+  - casio
+  require_any_words:
+  - montre
+  - watch
+  - orologio
+  - uhr
+  - reloj
+  - g-shock
+  - gshock
+  - relogio
+  - relógio
+  detail_keywords:
+  - date
+  - day-date
+  - daydate
+  - automatic
+  - automatique
+  - automatico
+  exclude_keywords:
+  - digital
+  - montre connectée
+  - smartwatch
+  - réplique
+  - fake
+  - calculat
+  - taschenrechner
+  - rekenmachine
+  - teclado
+  - piano
+  - fotocamera
+  - graph 90
+  - fx-8
+  - fx 8
+  - fx-9
+  price_min: 0
+  price_max: 120
+- id: bmw-330i-f30-lci
+  label: "BMW 330i F30 LCI (2017-2019)"
+  category: cars
+  adapters: [autoscout24]     # La Centrale / Leboncoin Auto blocked by DataDome, see README
+  make: bmw
+  model: "330i"
+  body: f30
+  year_min: 2017
+  year_max: 2019
+  lci_only: true              # facelift only, exclude pre-LCI F30
+  price_min: 15000
+  price_max: 19000
+  mileage_max_km: 100000
+  preferred_options: ["m sport", "pack m", "xdrive", "head-up", "toit ouvrant", "harman kardon"]
+  exclude_keywords: ["accidenté", "salvage", "pour pièces", "non roulant"]
