@@ -1,0 +1,42 @@
+name: marketplace-watch
+
+on:
+  schedule:
+    # 8am and 8pm Europe/Paris. GitHub Actions cron is UTC and does not
+    # follow DST, so these are CEST (UTC+2, summer) times. In winter (CET,
+    # UTC+1) actual runs land an hour later than intended (9am/9pm). Adjust
+    # by 1 hour around late Oct / late Mar if that drift matters to you.
+    - cron: "0 6 * * *"
+    - cron: "0 18 * * *"
+  workflow_dispatch: {}   # allows manual "Run workflow" button in GitHub UI
+
+permissions:
+  contents: write   # needed to commit data/watcher.db back to the repo
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests pyyaml
+
+      - name: Run watcher
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 run.py
+
+      - name: Commit updated price history
+        run: |
+          git config user.name "marketplace-watcher-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/watcher.db
+          git diff --cached --quiet || git commit -m "Update price history [skip ci]"
+          git push
