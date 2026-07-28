@@ -8,11 +8,14 @@
   <form class="field-group" method="get" action="{{ url_for('edit_item', item_id=item.id if item else None) }}">
     <div>
       <label>Category <span class="hint">(changing this reloads the form with the right fields)</span></label>
-      <select name="category" onchange="this.form.submit()">
-        {% for c in all_categories %}
-          <option value="{{ c }}" {{ 'selected' if c == category else '' }}>{{ c }}</option>
-        {% endfor %}
-      </select>
+      <div style="display:flex; gap:.5rem;">
+        <select name="category" onchange="this.form.submit()" style="flex:1;">
+          {% for c in all_categories %}
+            <option value="{{ c }}" {{ 'selected' if c == category else '' }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+        <a class="btn" href="{{ url_for('new_category_form') }}">+ New category</a>
+      </div>
     </div>
   </form>
 
@@ -24,14 +27,18 @@
     <div>
       <label>Item ID <span class="hint">(short unique slug, e.g. xbox-series-x)</span></label>
       <input type="text" name="id" value="{{ item.id if item else '' }}" required>
+      <p class="field-help">A short internal name with no spaces (use dashes) — used to track
+        this item's price history over time. Changing it later starts a fresh history.</p>
     </div>
 
     <div>
       <label>Label <span class="hint">(human-readable name shown in the list)</span></label>
       <input type="text" name="label" value="{{ item.label if item else '' }}">
+      <p class="field-help">The name you'll actually see on the shopping list page and in
+        Telegram alerts — can be anything readable.</p>
     </div>
 
-    {% for key, field_label, input_type in fields %}
+    {% for key, field_label, input_type, help_text in fields %}
       <div>
         <label>{{ field_label }}</label>
         {% if input_type == 'list' %}
@@ -41,6 +48,7 @@
         {% else %}
           <input type="text" name="{{ key }}" value="{{ item[key] if item and item.get(key) else '' }}">
         {% endif %}
+        {% if help_text %}<p class="field-help">{{ help_text }}</p>{% endif %}
       </div>
     {% endfor %}
 

@@ -20,44 +20,107 @@ yaml = YAML()
 yaml.preserve_quotes = True
 yaml.width = 4096  # avoid ruamel wrapping long lines mid-string
 
-# Field definitions per category: (config_key, label, input_type)
+# Field definitions per category: (config_key, label, input_type, help_text)
 # input_type: text | number | list | checkbox
+# help_text explains what the field actually does, shown under the input in the GUI.
+GENERIC_FIELDS = [
+    ("keywords", "Search keywords (one per line)", "list",
+     "What gets typed into the site's search box. Each line is searched separately, "
+     "results are combined. Keep these broad — narrow it down with the fields below "
+     "instead, since the site's own search is fuzzy and won't exactly match what you type."),
+    ("require_all_words", "Must contain ALL of these words (one per line)", "list",
+     "A listing is only kept if its title contains every single word listed here. "
+     "Use this to nail down an exact model/name made of several words, e.g. "
+     "\"xbox\" + \"series\" + \"x\" so a listing needs all three, not just one."),
+    ("require_any_words", "Must contain AT LEAST ONE of these words (one per line)", "list",
+     "A listing is only kept if its title contains at least one of these words. "
+     "Useful for confirming the listing is actually the right kind of thing, e.g. "
+     "requiring \"montre\"/\"watch\"/\"orologio\" so a calculator with the same "
+     "brand name doesn't slip through."),
+    ("exclude_keywords", "Exclude if title contains (one per line)", "list",
+     "Instant reject list. If a listing's title contains ANY of these words, it's "
+     "thrown out no matter what else matches. Use this for accessories, wrong "
+     "variants, games instead of consoles, scam red flags, etc."),
+    ("price_min", "Min price (EUR)", "number",
+     "Listings cheaper than this are ignored (useful for filtering out obvious "
+     "scams or parts-only listings priced suspiciously low). Leave at 0 if you don't need a floor."),
+    ("price_max", "Max price (EUR)", "number",
+     "Your budget ceiling — listings above this price are ignored entirely."),
+]
+
 CATEGORY_FIELDS = {
-    "electronics": [
-        ("keywords", "Search keywords (one per line)", "list"),
-        ("require_all_words", "Must contain ALL of these words (one per line)", "list"),
-        ("require_any_words", "Must contain AT LEAST ONE of these words (one per line)", "list"),
-        ("exclude_keywords", "Exclude if title contains (one per line)", "list"),
-        ("price_min", "Min price (EUR)", "number"),
-        ("price_max", "Max price (EUR)", "number"),
-    ],
+    "electronics": GENERIC_FIELDS,
     "watches": [
-        ("keywords", "Brand keywords (one per line)", "list"),
-        ("require_any_words", "Must contain AT LEAST ONE of these words (one per line)", "list"),
-        ("detail_keywords", "Nice-to-have detail keywords (one per line)", "list"),
-        ("exclude_keywords", "Exclude if title contains (one per line)", "list"),
-        ("price_min", "Min price (EUR)", "number"),
-        ("price_max", "Max price (EUR)", "number"),
+        ("keywords", "Brand keywords (one per line)", "list",
+         "Brand names to search for, e.g. \"seiko\", \"casio\". Each is searched separately."),
+        ("require_any_words", "Must contain AT LEAST ONE of these words (one per line)", "list",
+         "A listing is only kept if its title contains at least one of these — used here "
+         "to confirm it's actually a watch (montre/watch/orologio/uhr/...), since brand "
+         "names alone also match calculators, keyboards, cameras from the same manufacturer."),
+        ("detail_keywords", "Nice-to-have detail keywords (one per line)", "list",
+         "Words that make a listing more interesting if present (e.g. \"automatic\", "
+         "\"day-date\") — currently informational only, doesn't filter anything out."),
+        ("exclude_keywords", "Exclude if title contains (one per line)", "list",
+         "Instant reject list — any of these words in the title and the listing is thrown "
+         "out. Used to filter out calculators, digital watches, fakes, unrelated items."),
+        ("price_min", "Min price (EUR)", "number", "Listings cheaper than this are ignored."),
+        ("price_max", "Max price (EUR)", "number", "Your budget ceiling for this item."),
     ],
     "cars": [
-        ("make", "Make (e.g. bmw)", "text"),
-        ("model", "Model (e.g. 330i)", "text"),
-        ("body", "Body/chassis code (e.g. f30)", "text"),
-        ("year_min", "Min year", "number"),
-        ("year_max", "Max year", "number"),
-        ("price_min", "Min price (EUR)", "number"),
-        ("price_max", "Max price (EUR)", "number"),
-        ("mileage_max_km", "Max mileage (km)", "number"),
-        ("preferred_options", "Preferred options (one per line, for reference only)", "list"),
-        ("exclude_keywords", "Exclude if title contains (one per line)", "list"),
+        ("make", "Make (e.g. bmw)", "text", "The car manufacturer, lowercase, e.g. \"bmw\"."),
+        ("model", "Model (e.g. 330i)", "text", "The specific model/trim, e.g. \"330i\"."),
+        ("body", "Body/chassis code (e.g. f30)", "text",
+         "The chassis/generation code, e.g. \"f30\" for 2012-2019 3 Series. Reference only "
+         "right now — not yet used as an active filter by the search."),
+        ("year_min", "Min year", "number", "Earliest first-registration year to accept."),
+        ("year_max", "Max year", "number", "Latest first-registration year to accept."),
+        ("price_min", "Min price (EUR)", "number", "Listings cheaper than this are ignored."),
+        ("price_max", "Max price (EUR)", "number", "Your budget ceiling."),
+        ("mileage_max_km", "Max mileage (km)", "number", "Listings above this mileage are ignored."),
+        ("preferred_options", "Preferred options (one per line, for reference only)", "list",
+         "Options you'd like to see (M Sport, xDrive, Head-Up Display, etc.) — informational "
+         "only right now, doesn't filter anything out, just a reminder to yourself when reading alerts."),
+        ("exclude_keywords", "Exclude if title contains (one per line)", "list",
+         "Instant reject list — any of these words in the title/description and the "
+         "listing is thrown out. Used for damage/salvage/parts-only red flags."),
     ],
 }
 
-ADAPTERS_BY_CATEGORY = {
+DEFAULT_ADAPTERS_BY_CATEGORY = {
     "electronics": ["vinted"],
     "watches": ["vinted"],
     "cars": ["autoscout24"],
 }
+
+AVAILABLE_SITES = {
+    "vinted": "Vinted (clothing, electronics, general second-hand)",
+    "autoscout24": "AutoScout24 (cars)",
+}
+
+
+def get_custom_categories(config: dict) -> dict:
+    """Custom categories live in config.yaml under settings.custom_categories:
+    {name: {adapters: [...]}} — they use GENERIC_FIELDS for their form fields."""
+    return config.get("settings", {}).get("custom_categories", {}) or {}
+
+
+def all_category_names(config: dict) -> list:
+    return list(CATEGORY_FIELDS.keys()) + list(get_custom_categories(config).keys())
+
+
+def fields_for_category(category: str) -> list:
+    return CATEGORY_FIELDS.get(category, GENERIC_FIELDS)
+
+
+def adapters_for_category(config: dict, category: str) -> list:
+    # Always return a fresh list, never the category's own list object — reusing
+    # it directly would make ruamel.yaml emit a YAML anchor/alias between the
+    # category definition and every item's `adapters` field, which is
+    # confusing to hand-read and risks items appearing to share mutable state.
+    if category in DEFAULT_ADAPTERS_BY_CATEGORY:
+        return list(DEFAULT_ADAPTERS_BY_CATEGORY[category])
+    custom = get_custom_categories(config)
+    return list(custom.get(category, {}).get("adapters", []))
 
 
 def load_config():
@@ -158,15 +221,42 @@ def edit_item(item_id=None):
         if item is None:
             return "Item not found", 404
     category = request.args.get("category", item["category"] if item else "electronics")
-    fields = CATEGORY_FIELDS.get(category, [])
+    fields = fields_for_category(category)
     return render_template(
         "edit_item.html",
         item=item,
         category=category,
         fields=fields,
-        all_categories=list(CATEGORY_FIELDS.keys()),
+        all_categories=all_category_names(config),
         list_to_text=list_to_text,
     )
+
+
+@app.route("/category/new", methods=["GET"])
+def new_category_form():
+    return render_template("new_category.html", available_sites=AVAILABLE_SITES)
+
+
+@app.route("/category/new", methods=["POST"])
+def create_category():
+    config = load_config()
+    name = request.form.get("name", "").strip().lower().replace(" ", "-")
+    sites = request.form.getlist("adapters")
+
+    if not name:
+        return "Category name is required", 400
+    if not sites:
+        return "Pick at least one site to search", 400
+    if name in all_category_names(config):
+        return f"Category '{name}' already exists", 400
+
+    settings = config.setdefault("settings", {})
+    custom = settings.setdefault("custom_categories", {})
+    custom[name] = {"adapters": sites}
+
+    save_config(config)
+    ok, msg = git_commit_and_push(f"Add custom category: {name}")
+    return redirect(url_for("edit_item", category=name, flash=msg, flash_ok=int(ok)))
 
 
 @app.route("/item/save", methods=["POST"])
@@ -185,10 +275,10 @@ def save_item():
         "id": item_id,
         "label": form.get("label", item_id),
         "category": category,
-        "adapters": ADAPTERS_BY_CATEGORY.get(category, []),
+        "adapters": adapters_for_category(config, category),
     }
 
-    for key, _, input_type in CATEGORY_FIELDS.get(category, []):
+    for key, _, input_type, *_rest in fields_for_category(category):
         raw = form.get(key, "")
         if input_type == "list":
             new_item[key] = text_to_list(raw)
@@ -206,6 +296,10 @@ def save_item():
         idx = next((n for n, i in enumerate(items) if i["id"] == original_id), None)
         if idx is None:
             return "Item to edit not found", 404
+        # Preserve pause state across an edit — editing filters shouldn't
+        # silently un-pause an item you deliberately paused.
+        if items[idx].get("enabled", True) is False:
+            new_item["enabled"] = False
         items[idx] = new_item
 
     save_config(config)
@@ -217,6 +311,23 @@ def save_item():
 def run_now():
     ok, output = run_watcher_now()
     return render_template("run_result.html", ok=ok, output=output)
+
+
+@app.route("/item/<item_id>/toggle", methods=["POST"])
+def toggle_item(item_id):
+    config = load_config()
+    items = config.get("items", [])
+    item = next((i for i in items if i["id"] == item_id), None)
+    if item is None:
+        return "Item not found", 404
+
+    currently_enabled = item.get("enabled", True) is not False
+    item["enabled"] = not currently_enabled
+
+    save_config(config)
+    state = "paused" if currently_enabled else "resumed"
+    ok, msg = git_commit_and_push(f"{'Pause' if currently_enabled else 'Resume'} shopping list item: {item_id}")
+    return redirect(url_for("index", flash=f"{item_id} {state}." if ok else msg, flash_ok=int(ok)))
 
 
 @app.route("/item/<item_id>/delete", methods=["POST"])

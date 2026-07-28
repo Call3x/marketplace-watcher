@@ -8,6 +8,7 @@
   body { font-family: -apple-system, system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
   h1 { font-size: 1.4rem; }
   .card { border: 1px solid #8884; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .card.disabled { opacity: .55; }
   .card h2 { margin: 0 0 .25rem; font-size: 1.1rem; }
   .meta { color: #888; font-size: .85rem; margin-bottom: .5rem; }
   .actions { margin-top: .75rem; display: flex; gap: .5rem; }
@@ -22,6 +23,12 @@
   }
   textarea { min-height: 4.5rem; font-family: ui-monospace, monospace; font-size: .85rem; }
   .hint { color: #888; font-size: .8rem; font-weight: normal; }
+  .field-help { color: #888; font-size: .8rem; margin: .35rem 0 0; line-height: 1.4; }
+  fieldset { border: 1px solid #8884; border-radius: 8px; padding: .75rem 1rem; }
+  legend { font-weight: 600; font-size: .9rem; padding: 0 .4rem; }
+  .checkbox-row { display: flex; align-items: center; gap: .5rem; margin: .35rem 0; }
+  .checkbox-row input { width: auto; }
+  .checkbox-row label { margin: 0; font-weight: normal; }
   .flash { padding: .6rem 1rem; border-radius: 8px; margin-bottom: 1rem; }
   .flash.ok { background: #16a34a22; border: 1px solid #16a34a55; }
   .flash.err { background: #dc262622; border: 1px solid #dc262655; }
