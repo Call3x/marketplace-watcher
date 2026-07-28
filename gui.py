@@ -69,14 +69,29 @@ def save_config(config):
         yaml.dump(config, f)
 
 
+def _run(args):
+    return subprocess.run(args, cwd=REPO_DIR, check=True, capture_output=True, text=True)
+
+
 def git_commit_and_push(message: str) -> tuple[bool, str]:
     try:
-        subprocess.run(["git", "add", "config.yaml"], cwd=REPO_DIR, check=True, capture_output=True, text=True)
+        _run(["git", "add", "config.yaml"])
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=REPO_DIR)
         if diff.returncode == 0:
             return True, "No changes to commit."
-        subprocess.run(["git", "commit", "-m", message], cwd=REPO_DIR, check=True, capture_output=True, text=True)
-        subprocess.run(["git", "push"], cwd=REPO_DIR, check=True, capture_output=True, text=True)
+        _run(["git", "commit", "-m", message])
+
+        # data/watcher.db is updated by scheduled GitHub Actions runs, which
+        # can race with a save here — retry with a rebase if the push is
+        # rejected for being behind, rather than failing the whole save.
+        for attempt in range(3):
+            try:
+                _run(["git", "push"])
+                return True, "Saved and pushed to GitHub."
+            except subprocess.CalledProcessError as push_err:
+                if attempt == 2:
+                    raise
+                _run(["git", "pull", "--rebase", "origin", "main"])
         return True, "Saved and pushed to GitHub."
     except subprocess.CalledProcessError as e:
         return False, f"Git error: {e.stderr or e.stdout}"
