@@ -139,3 +139,4 @@ items:
   mileage_max_km: 100000
   preferred_options: ["m sport", "pack m", "xdrive", "head-up", "toit ouvrant", "harman kardon"]
   exclude_keywords: ["accidenté", "salvage", "pour pièces", "non roulant"]
+  enabled: false
