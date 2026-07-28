@@ -162,3 +162,123 @@ items:
   preferred_options: ["m sport", "pack m", "xdrive", "head-up", "toit ouvrant", "harman kardon"]
   exclude_keywords: ["accidenté", "salvage", "pour pièces", "non roulant"]
   enabled: true
+
+- id: pants-w34-l34
+  label: "Men's pants/jeans (W34 L34)"
+  category: clothing
+  adapters: [vinted]
+  # Size-specific search terms so Vinted's own ranking surfaces relevant
+  # results within the fixed 40-result window (a bare "pantalon homme"
+  # search returns 40 recent listings of every size, most not W34/L34).
+  # The adapter only re-confirms the FIRST word of each keyword appears in
+  # the title (not the whole phrase), so this is safe from Vinted's fuzzy
+  # search still returning wrongly-worded results — require_any_words below
+  # is what actually filters on size.
+  keywords:
+  - pantalon homme w34 l34
+  - jean homme w34 l34
+  - jean w34 l34
+  - trousers w34 l34
+  - jeans w34 l34
+  # A real W34 L34 listing states its size in one of these common formats —
+  # this is the actual filtering mechanism, not the keyword search alone
+  # (Vinted's search is fuzzy and returns a lot of wrong sizes otherwise).
+  require_any_words:
+  - w34 l34
+  - w34/l34
+  - w34xl34
+  - "34x34"
+  - "34/34"
+  - w34 34
+  exclude_keywords:
+  - femme          # women's (fr)
+  - donna          # women's (it)
+  - mujer          # women's (es)
+  - damen          # women's (de)
+  - enfant         # kids (fr)
+  - bambino        # kids (it)
+  - niño           # kids (es)
+  - kinder         # kids (de)
+  price_min: 0
+  price_max: 50
+
+- id: tshirts-l
+  label: "Men's T-shirts (size L)"
+  category: clothing
+  adapters: [vinted]
+  keywords:
+  - t-shirt homme taille l
+  - tshirt homme l
+  require_any_words:
+  - taille l
+  - size l
+  - talla l
+  - größe l
+  - taglia l
+  - xl/l
+  - l/xl
+  exclude_keywords:
+  - femme
+  - donna
+  - mujer
+  - damen
+  - enfant
+  - bambino
+  - niño
+  - kinder
+  price_min: 0
+  price_max: 50
+
+- id: hoodies-l
+  label: "Men's Hoodies (size L)"
+  category: clothing
+  adapters: [vinted]
+  keywords:
+  - hoodie homme taille l
+  - sweat à capuche homme taille l
+  require_any_words:
+  - taille l
+  - size l
+  - talla l
+  - größe l
+  - taglia l
+  - xl/l
+  - l/xl
+  exclude_keywords:
+  - femme
+  - donna
+  - mujer
+  - damen
+  - enfant
+  - bambino
+  - niño
+  - kinder
+  price_min: 0
+  price_max: 50
+
+- id: jumpers-l
+  label: "Men's Jumpers/Sweaters (size L)"
+  category: clothing
+  adapters: [vinted]
+  keywords:
+  - pull homme taille l
+  - jumper men l
+  require_any_words:
+  - taille l
+  - size l
+  - talla l
+  - größe l
+  - taglia l
+  - xl/l
+  - l/xl
+  exclude_keywords:
+  - femme
+  - donna
+  - mujer
+  - damen
+  - enfant
+  - bambino
+  - niño
+  - kinder
+  price_min: 0
+  price_max: 50
