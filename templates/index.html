@@ -2,7 +2,12 @@
 {% block content %}
   <div class="top-actions">
     <h1>Shopping list</h1>
-    <a class="btn primary" href="{{ url_for('edit_item') }}">+ Add item</a>
+    <div class="actions">
+      <form method="post" action="{{ url_for('run_now') }}" onsubmit="this.querySelector('button').textContent='Running… (up to 15 min)'; this.querySelector('button').disabled=true;">
+        <button class="btn" type="submit">▶ Run now</button>
+      </form>
+      <a class="btn primary" href="{{ url_for('edit_item') }}">+ Add item</a>
+    </div>
   </div>
 
   {% set flash = request.args.get('flash') %}

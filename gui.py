@@ -5,6 +5,7 @@ the next scheduled Actions run picks up the change.
 
 Run: python3 gui.py   then open http://localhost:5000
 """
+import os
 import subprocess
 from pathlib import Path
 
@@ -97,6 +98,38 @@ def git_commit_and_push(message: str) -> tuple[bool, str]:
         return False, f"Git error: {e.stderr or e.stdout}"
 
 
+def load_env_file() -> dict:
+    """Parse .env (KEY=VALUE per line) without needing python-dotenv."""
+    env_path = REPO_DIR / ".env"
+    env = {}
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            env[key.strip()] = value.strip()
+    return env
+
+
+def run_watcher_now() -> tuple[bool, str]:
+    env = os.environ.copy()
+    env.update(load_env_file())
+    try:
+        result = subprocess.run(
+            ["python3", "run.py"],
+            cwd=REPO_DIR,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=20 * 60,
+        )
+        output = (result.stdout or "") + (result.stderr or "")
+        return result.returncode == 0, output
+    except subprocess.TimeoutExpired:
+        return False, "Run timed out after 20 minutes."
+
+
 def list_to_text(values) -> str:
     return "\n".join(values) if values else ""
 
@@ -178,6 +211,12 @@ def save_item():
     save_config(config)
     ok, msg = git_commit_and_push(f"Update shopping list item: {item_id}")
     return redirect(url_for("index", flash=msg, flash_ok=int(ok)))
+
+
+@app.route("/run-now", methods=["POST"])
+def run_now():
+    ok, output = run_watcher_now()
+    return render_template("run_result.html", ok=ok, output=output)
 
 
 @app.route("/item/<item_id>/delete", methods=["POST"])
