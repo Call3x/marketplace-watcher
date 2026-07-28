@@ -44,5 +44,12 @@ jobs:
           git config user.name "marketplace-watcher-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data/watcher.db
-          git diff --cached --quiet || git commit -m "Update price history [skip ci]"
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Update price history [skip ci]"
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase origin main
+          done
           git push
