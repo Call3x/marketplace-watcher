@@ -1,7 +1,10 @@
 # marketplace-watcher
 
-Scans your shopping list against second-hand marketplaces twice a day, tracks
-price history in SQLite, and sends new listings / price drops to Telegram.
+Scans your shopping list against second-hand marketplaces, tracks price
+history in SQLite, and sends new listings / price drops to Telegram.
+Runs on a schedule via GitHub Actions — no need for your laptop to be on.
+
+Repo: https://github.com/Call3x/marketplace-watcher (private)
 
 ## Sites covered
 
@@ -11,50 +14,64 @@ price history in SQLite, and sends new listings / price drops to Telegram.
   behind DataDome anti-bot and return a CAPTCHA challenge on the very first
   unauthenticated request, even to the plain HTML page. Getting past that
   reliably needs a stealth headless browser or a paid unblocking proxy —
-  not worth it for a twice-a-day personal scan. If this becomes a priority,
-  say so and we can revisit with one of those approaches.
+  not worth it for a twice-a-day personal scan.
 
-## Setup
+## How scheduling works now
 
-### 1. Telegram bot (one-time, ~2 minutes)
+The scraper runs on **GitHub Actions**, not this laptop — see
+`.github/workflows/watch.yml`. It fires roughly twice a day (around 8am and
+8pm Europe/Paris, scheduled at :17 past the hour rather than :00 since
+GitHub's free tier queues on-the-hour jobs together and can delay them by
+hours; :17 usually starts within a few minutes of the scheduled time — but
+GitHub does not guarantee exact timing, treat it as "sometime around" rather
+than a precise alarm).
 
-1. In Telegram, message **@BotFather** → `/newbot` → follow the prompts.
-   You'll get a token that looks like `123456789:AA...`.
-2. Message your new bot anything (e.g. "hi") so it can message you back.
-3. Get your chat ID: message **@userinfobot** and it will reply with your ID.
-4. Copy `.env.example` to `.env` and fill in both values:
-   ```
-   cp .env.example .env
-   # edit .env with your token and chat id
-   ```
+After each run, the workflow commits the updated `data/watcher.db` (price
+history) back to the `main` branch, so state persists across runs even
+though each GitHub Actions run starts on a fresh machine.
 
-### 2. Dependencies
+There is **no local cron job** on this laptop anymore — it was removed once
+GitHub Actions was confirmed working, to avoid duplicate notifications.
 
-Already installed on this machine (`requests`, `pyyaml`, via
-`pip3 install --break-system-packages --user`, since `python3-venv` wasn't
-installed and sudo wasn't available non-interactively during setup).
+You can also trigger a run manually any time from the GitHub UI (Actions tab
+→ marketplace-watch → Run workflow) or via `gh workflow run watch.yml`.
 
-If you'd prefer an isolated virtualenv instead:
+## Editing your shopping list
+
+### Option A: the GUI (recommended for day-to-day changes)
+
 ```
-sudo apt install python3.12-venv
-python3 -m venv venv
-./venv/bin/pip install requests pyyaml
+python3 gui.py
 ```
-and adjust `run_cron.sh` to call `venv/bin/python3` instead of `python3`.
+Open http://localhost:5000 in a browser. Add/edit/delete items with a form
+— fields adapt per category (electronics/watches vs. cars). **Saving commits
+and pushes `config.yaml` to GitHub automatically** — the next scheduled
+Actions run picks up the new filters, no extra step needed.
 
-### 3. Edit your shopping list
+Requires `flask` and `ruamel.yaml` (already installed on this machine via
+`pip3 install --break-system-packages --user -r requirements-gui.txt`).
 
-Edit `config.yaml`. Each item has:
+The GUI uses `ruamel.yaml` specifically (not plain PyYAML) so that editing
+one item doesn't strip the explanatory comments on the others.
+
+### Option B: edit config.yaml directly
+
+Each item has:
 - `keywords` — search terms
 - `exclude_keywords` — substrings that disqualify a match (accessories, games, wrong models, etc.)
 - `price_min` / `price_max`
 - adapter-specific fields (cars have `year_min`/`year_max`/`mileage_max_km`, etc.)
 
-Tune `exclude_keywords` over the first week or two — marketplace search is
-fuzzy and will surface false positives (a game instead of a console, a
-calculator instead of a watch) until the exclusion list catches them.
+After a manual edit, commit and push yourself so GitHub Actions sees it:
+```
+git add config.yaml && git commit -m "update shopping list" && git push
+```
 
-### 4. Test manually before scheduling
+Tune `exclude_keywords` over time — marketplace search is fuzzy and will
+surface false positives (a game instead of a console, a calculator instead
+of a watch) until the exclusion list catches them.
+
+## Testing manually
 
 ```
 python3 run.py --dry-run
@@ -64,20 +81,9 @@ Prints what *would* be sent without touching Telegram or marking listings as see
 ```
 python3 run.py
 ```
-Real run — sends Telegram messages and updates the database.
-
-### 5. Schedule with cron
-
-Runs morning and evening, ~15 min budget each:
-```
-crontab -e
-```
-Add:
-```
-0 8  * * * /home/callex/marketplace-watcher/run_cron.sh
-0 20 * * * /home/callex/marketplace-watcher/run_cron.sh
-```
-Only fires if the laptop is on and awake at that time. Logs land in `logs/`.
+Real run — sends Telegram messages and updates the database (needs `.env`
+with `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` set locally, or run via
+`./run_cron.sh` which loads `.env` automatically).
 
 ## How it decides what to notify about
 
@@ -88,16 +94,24 @@ Only fires if the laptop is on and awake at that time. Logs land in `logs/`.
   internally (sold/delisted) — no notification for that, just stops being
   tracked for price drops.
 
+## Secrets
+
+`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` live in **GitHub repo secrets**
+(Settings → Secrets and variables → Actions) for the scheduled runs, and in
+the local `.env` file (gitignored) for manual local runs.
+
 ## Known limitations
 
 - **Car search** currently uses AutoScout24 only. It's cross-border by
-  nature (BMW 330i F30 LCI in your budget is genuinely scarce right now —
-  first live test found only 2 matches in the €15-19k / <100k km / 2017-19
-  range, both in Germany). Worth widening the mileage/price band if matches
-  stay rare.
+  nature (BMW 330i F30 LCI in your budget is genuinely scarce — first live
+  test found only 2 matches in the €15-19k / <100k km / 2017-19 range, both
+  in Germany). Worth widening the mileage/price band if matches stay rare.
 - **Xbox/watch matching** relies on keyword + exclusion-list filtering, not
   true categorization — expect occasional false positives until the
   exclude lists are tuned from real notifications.
-- Runs only when the laptop is on (cron). See project chat history for the
-  plan to migrate to GitHub Actions (free, true 24/7) once this is proven
-  out for a week or two.
+- GitHub Actions free-tier scheduled runs are not guaranteed to fire exactly
+  on time — see "How scheduling works now" above.
+- If the GUI's save and a scheduled Actions run push to `main` at nearly the
+  same time, both retry with a rebase-and-retry loop rather than failing
+  outright, but it's still possible (rare) for a save to need a manual retry
+  if you see a git error in the GUI's flash message.
