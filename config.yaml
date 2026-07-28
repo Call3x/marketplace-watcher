@@ -8,59 +8,54 @@ settings:
   currency: EUR
 
 items:
-- id: xbox-series-x
-  label: Xbox Series X
+- id: xbox-console
+  label: Xbox Console (any generation)
   category: electronics
   adapters:
   - vinted
   keywords:
-  - xbox series x
+  - xbox one console
+  - xbox one s
+  - xbox one x
+  - xbox series s console
+  - xbox series x console
   require_all_words:
   - xbox
-  require_any_words: []
+  # A real console listing almost always mentions its storage size or the
+  # word "console" itself — games and accessories don't. This is the main
+  # signal that separates consoles from games, not the exclude list below.
+  require_any_words:
+  - console
+  - go
+  - gb
+  - tb
+  - digital edition
+  # Note: deliberately NOT excluding "manette"/"controller" here — a real
+  # console bundle often says "with controllers included", and require_any_words
+  # above already keeps controller-only listings out (they won't mention
+  # console/gb/tb/digital edition). Excluding those words as substrings was
+  # wrongly rejecting genuine console+controller bundles.
   exclude_keywords:
-  - manette
-  - controller
-  - comando
-  - mando
   - casque
   - volant
   - thrustmaster
   - logitech
   - gamesir
   - 8bitdo
-  - jeu
-  - juego
-  - gioco
-  - spiel
   - geprint
   - houder
   - clip
-  - series s
-  - serie s
-  - pour xbox
-  - for xbox
-  - per xbox
-  - für xbox
-  - para xbox
-  - elden ring
-  - resident evil
-  - ea sports
-  - fc 24
-  - fc 25
-  - call of duty
-  - nba 2k
-  - monster hunter
-  - monster energy supercross
-  - dragon's dogma
-  - indiana jones
-  - just dance
-  - wrc generations
-  - forza
-  - rainbow six
-  - farming simulator
-  - harry potter
-  - callisto protocol
+  # Game-indicating words — this is now a backstop, not the primary filter
+  # (require_any_words above does most of the work of excluding games).
+  - jeu
+  - jeux
+  - juego
+  - gioco
+  - spiel
+  - game
+  - steelbook
+  - blister
+  - neuf sous blister
   price_min: 0
   price_max: 450
 - id: watches-seiko-casio
