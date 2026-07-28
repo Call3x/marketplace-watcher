@@ -25,8 +25,13 @@ if curl -s -o /dev/null --max-time 1 "$URL" 2>/dev/null; then
 fi
 
 : > "$LOG"
-"$PYTHON" "$DIR/gui.py" >> "$LOG" 2>&1 &
+# setsid + full fd redirection fully detaches the server from whatever
+# launched this script (terminal, or Nautilus's own process group) — a
+# plain `&` only detaches from the shell's job control, and file managers
+# can still take the child down when they consider the launch "done".
+setsid "$PYTHON" "$DIR/gui.py" < /dev/null >> "$LOG" 2>&1 &
 GUI_PID=$!
+disown "$GUI_PID" 2>/dev/null || true
 
 # Poll for the server to actually come up instead of a blind sleep.
 for i in $(seq 1 30); do
