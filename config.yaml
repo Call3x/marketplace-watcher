@@ -7,6 +7,10 @@ settings:
   run_budget_minutes: 15      # soft cap per run, adapters should respect this
   currency: EUR
 
+  custom_categories:
+    clothing:
+      adapters:
+      - vinted
 items:
 - id: xbox-console
   label: Xbox Console (any generation)
