@@ -39,6 +39,11 @@
           </div>
           <div class="actions">
             <a class="btn" href="{{ url_for('edit_item', item_id=item.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('clear_history', item_id=item.id) }}"
+                  onsubmit="return confirm('Clear tracked history for {{ item.label or item.id }}? The next run will treat every currently-live match as brand new and notify you about all of them again.');" style="display:inline"
+                  title="Wipe tracked listings so the next run sends everything currently live as new again">
+              <button class="btn" type="submit">Clear history</button>
+            </form>
             <form method="post" action="{{ url_for('delete_item', item_id=item.id) }}"
                   onsubmit="return confirm('Remove {{ item.label or item.id }} from the shopping list?');" style="display:inline">
               <button class="btn danger" type="submit">Delete</button>

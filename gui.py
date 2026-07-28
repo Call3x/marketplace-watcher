@@ -12,6 +12,8 @@ from pathlib import Path
 from flask import Flask, redirect, render_template, request, session, url_for
 from ruamel.yaml import YAML
 
+import db
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # local-only tool, session cookie just needs to survive the process
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
@@ -352,6 +354,17 @@ def delete_item(item_id):
     save_config(config)
     ok, msg = git_commit_and_push(f"Remove shopping list item: {item_id}")
     return redirect(url_for("index", flash=msg, flash_ok=int(ok)))
+
+
+@app.route("/item/<item_id>/clear-history", methods=["POST"])
+def clear_history(item_id):
+    """Wipe tracked listings for this item (local SQLite only, not git/GitHub)
+    so the next run treats every currently-live match as new again — useful
+    right after changing an item's keywords/filters to get a fresh baseline
+    instead of waiting for "genuinely new since the old filter" results."""
+    with db.connect() as conn:
+        count = db.clear_history_for_item(conn, item_id)
+    return redirect(url_for("index", flash=f"Cleared {count} tracked listing(s) for {item_id}.", flash_ok=1))
 
 
 if __name__ == "__main__":

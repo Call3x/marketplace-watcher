@@ -114,6 +114,22 @@ def log_notification(conn, uid: str, reason: str):
     )
 
 
+def clear_history_for_item(conn, item_id: str) -> int:
+    """Delete all tracked listings (and their price_history/notifications rows)
+    for a shopping-list item, so the next run treats every currently-live
+    match as brand new again. Useful after materially changing an item's
+    filters/keywords when you want a fresh baseline instead of only seeing
+    what's genuinely new since the old filter was last run. Returns the
+    number of listings deleted."""
+    cur = conn.execute("SELECT uid FROM listings WHERE item_id = ?", (item_id,))
+    uids = [row[0] for row in cur.fetchall()]
+    for uid in uids:
+        conn.execute("DELETE FROM price_history WHERE uid = ?", (uid,))
+        conn.execute("DELETE FROM notifications WHERE uid = ?", (uid,))
+    conn.execute("DELETE FROM listings WHERE item_id = ?", (item_id,))
+    return len(uids)
+
+
 def median_price_for_item(conn, item_id: str, exclude_uid: str, min_samples: int = 5) -> float | None:
     """Median of the first-seen price of every other listing ever recorded for
     this shopping-list item — used to judge whether a new match is cheap
