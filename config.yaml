@@ -13,31 +13,55 @@ items:
   category: electronics
   adapters:
   - vinted
+  # Sellers on the FR/BE sites write in many languages (French, English,
+  # Italian, Spanish, German, Dutch are all common), and a lot of real
+  # console listings just say "Xbox" with no generation qualifier — so a
+  # bare "xbox" search is included too, leaning harder on require_any_words
+  # below to separate real consoles from the much larger volume of games/
+  # accessories that search also returns.
   keywords:
+  - xbox
   - xbox one console
   - xbox one s
   - xbox one x
   - xbox series s console
   - xbox series x console
+  - xbox konsole
+  - xbox consola
+  - xbox console
   require_all_words:
   - xbox
   # A real console listing almost always mentions its storage size or the
-  # word "console" itself — games and accessories don't. This is the main
-  # signal that separates consoles from games, not the exclude list below.
+  # word "console" itself (in whatever language) — games and accessories
+  # don't. This is the main signal that separates consoles from games, not
+  # the exclude list below. FR/EN: console, ES: consola, DE: konsole/konsol,
+  # IT: console (same spelling as FR/EN).
   require_any_words:
   - console
+  - consola
+  - konsole
+  - konsol
+  - spielekonsole   # German compounds "console" onto the noun before it (spiele+konsole)
   - go
   - gb
   - tb
   - digital edition
-  # Note: deliberately NOT excluding "manette"/"controller" here — a real
-  # console bundle often says "with controllers included", and require_any_words
-  # above already keeps controller-only listings out (they won't mention
+  - edizione digitale
+  - edicion digital
+  # Note: deliberately NOT excluding "manette"/"controller"/"mando"/"mando"
+  # in any language here — a real console bundle often says "with
+  # controllers included", and require_any_words above already keeps
+  # controller-only listings out on its own (they won't mention
   # console/gb/tb/digital edition). Excluding those words as substrings was
   # wrongly rejecting genuine console+controller bundles.
   exclude_keywords:
-  - casque
-  - volant
+  - casque       # headset (fr)
+  - cuffie       # headset (it)
+  - kopfhörer    # headset (de)
+  - auriculares  # headset (es)
+  - volant       # wheel (fr)
+  - volante      # wheel (es/it)
+  - lenkrad      # wheel (de)
   - thrustmaster
   - logitech
   - gamesir
@@ -45,17 +69,24 @@ items:
   - geprint
   - houder
   - clip
+  - xbox 360     # different, older generation — exclude explicitly
+  - 360 slim
   # Game-indicating words — this is now a backstop, not the primary filter
   # (require_any_words above does most of the work of excluding games).
-  - jeu
+  - jeu          # game (fr)
   - jeux
-  - juego
-  - gioco
-  - spiel
+  - juego        # game (es)
+  - gioco        # game (it)
+  - giochi
+  - spiel        # game (de)
+  - spiele
+  - spellen      # games (nl)
   - game
+  - games
   - steelbook
   - blister
   - neuf sous blister
+  - custodia     # game case (it)
   price_min: 0
   price_max: 450
 - id: watches-seiko-casio

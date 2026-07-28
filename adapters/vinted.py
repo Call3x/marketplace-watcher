@@ -3,6 +3,8 @@
 No login required for browsing. Requires an initial homepage GET to pick up
 session cookies (anon_id, access_token_web) before the API accepts requests.
 """
+import re
+
 import requests
 
 from db import Listing
@@ -28,6 +30,16 @@ def _session_for(domain: str) -> requests.Session:
         "X-Requested-With": "XMLHttpRequest",
     })
     return s
+
+
+def _word_matches(word: str, title_l: str) -> bool:
+    """True if `word` appears in `title_l` as a whole word, or immediately
+    after a digit (so "gb"/"tb" match "500gb"/"512GB" but "consola" doesn't
+    match inside "videoconsola", and "game" doesn't match inside a longer
+    unrelated word). Short, common require_any_words like storage-size
+    abbreviations and translated nouns ("consola", "console", "go") are
+    exactly the words prone to this kind of accidental substring match."""
+    return re.search(rf"(?:(?<=\d)|\b){re.escape(word)}\b", title_l) is not None
 
 
 def search(item: dict, countries: list[str]) -> list[Listing]:
@@ -71,9 +83,9 @@ def search(item: dict, countries: list[str]) -> list[Listing]:
                     continue
                 if any(x in title_l for x in exclude):
                     continue
-                if require_all and not all(w in title_l for w in require_all):
+                if require_all and not all(_word_matches(w, title_l) for w in require_all):
                     continue
-                if require_any and not any(w in title_l for w in require_any):
+                if require_any and not any(_word_matches(w, title_l) for w in require_any):
                     continue
 
                 price = float(raw["price"]["amount"]) if raw.get("price") else None
