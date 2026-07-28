@@ -14,9 +14,7 @@ items:
   adapters:
   - vinted
   keywords:
-  - xbox-x
-  - xbox-series-x
-  - xbox-series-s
+  - xbox series x
   require_all_words:
   - xbox
   require_any_words: []

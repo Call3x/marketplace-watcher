@@ -42,3 +42,45 @@ def format_match(reason: str, title: str, price, url: str, old_price=None) -> st
     else:
         header = "🆕 New listing"
     return f"{header}\n<b>{title}</b>\n{price_str}\n{url}"
+
+
+CATEGORY_ICONS = {
+    "watches": "⌚",
+    "cars": "🚗",
+    "electronics": "🎮",
+}
+
+TELEGRAM_MAX_LEN = 4096
+
+
+def format_digest(category: str, category_label: str, entries: list) -> list:
+    """entries: list of (reason, title, price, url, old_price, item_label).
+    Returns a list of message strings — usually one, split into more only if
+    it would exceed Telegram's 4096-char message limit. If entries come from
+    more than one distinct shopping-list item, each line is prefixed with
+    that item's label so a merged digest doesn't lose which item matched."""
+    icon = CATEGORY_ICONS.get(category, "🔎")
+    header = f"{icon} <b>{category_label}</b> — {len(entries)} update{'s' if len(entries) != 1 else ''}\n"
+
+    distinct_items = {item_label for *_rest, item_label in entries}
+    show_item_label = len(distinct_items) > 1
+
+    lines = []
+    for reason, title, price, url, old_price, item_label in entries:
+        price_str = f"€{price:.0f}" if price is not None else "price n/a"
+        if reason == "price_drop" and old_price is not None:
+            tag = f"📉 €{old_price:.0f}→{price_str}"
+        else:
+            tag = f"🆕 {price_str}"
+        prefix = f"[{item_label}] " if show_item_label else ""
+        lines.append(f"{tag} — {prefix}<a href=\"{url}\">{title}</a>")
+
+    messages = []
+    current = header
+    for line in lines:
+        if len(current) + len(line) + 1 > TELEGRAM_MAX_LEN:
+            messages.append(current.rstrip())
+            current = f"{icon} <b>{category_label}</b> (cont.)\n"
+        current += line + "\n"
+    messages.append(current.rstrip())
+    return messages

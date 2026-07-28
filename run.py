@@ -34,7 +34,7 @@ def run(dry_run: bool = False):
     budget_seconds = config["settings"].get("run_budget_minutes", 15) * 60
     start = time.monotonic()
 
-    events = []  # (reason, listing, old_price)
+    events = []  # (reason, listing, old_price, category, item_label)
 
     with db.connect() as conn:
         for item in config["items"]:
@@ -67,19 +67,31 @@ def run(dry_run: bool = False):
 
                     reason = db.upsert_listing(conn, listing)
                     if reason in ("new", "price_drop"):
-                        events.append((reason, listing, old_price))
+                        events.append((reason, listing, old_price, item.get("category", "other"), item.get("label", item["id"])))
 
                 db.mark_inactive_not_seen_since(conn, adapter_name, item["id"], seen_uids)
 
+        # Group events by category so Telegram gets one digest message per
+        # category instead of one message per listing (which becomes
+        # unusable at 100+ matches for a broad category like watches).
+        by_category: dict[str, list] = {}
+        for reason, listing, old_price, category, item_label in events:
+            by_category.setdefault(category, []).append(
+                (reason, listing.title, listing.price, listing.url, old_price, item_label)
+            )
+
         if not dry_run:
-            for reason, listing, old_price in events:
-                text = notify.format_match(reason, listing.title, listing.price, listing.url, old_price)
-                if notify.send(text):
-                    db.log_notification(conn, listing.uid, reason)
+            for category, entries in by_category.items():
+                for msg in notify.format_digest(category, category.capitalize(), entries):
+                    notify.send(msg)
+            for reason, listing, old_price, _category, _label in events:
+                db.log_notification(conn, listing.uid, reason)
         else:
-            print(f"\n[dry-run] {len(events)} event(s) would be sent:")
-            for reason, listing, old_price in events:
-                print(" -", notify.format_match(reason, listing.title, listing.price, listing.url, old_price))
+            print(f"\n[dry-run] {len(events)} event(s) across {len(by_category)} categorie(s):")
+            for category, entries in by_category.items():
+                for msg in notify.format_digest(category, category.capitalize(), entries):
+                    print(f"--- message ({len(msg)} chars) ---")
+                    print(msg)
 
     print(f"[run] done in {time.monotonic() - start:.1f}s, {len(events)} notification(s)")
 
