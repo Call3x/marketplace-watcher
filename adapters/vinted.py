@@ -74,12 +74,21 @@ def search(item: dict, countries: list[str]) -> list[Listing]:
             except requests.RequestException:
                 continue
 
+            kw_first_word = kw.lower().split()[0] if kw.strip() else ""
+
             for raw in r.json().get("items", []):
                 title = raw.get("title", "")
                 title_l = title.lower()
-                # Vinted's own search is fuzzy/related-brand — re-confirm the
-                # searched keyword actually appears in the title before keeping it.
-                if kw.lower() not in title_l:
+                # Vinted's own search is fuzzy/related-brand — re-confirm at
+                # least the keyword's first word (the core subject, e.g.
+                # "pantalon"/"seiko"/"xbox") appears in the title. Requiring
+                # the WHOLE keyword verbatim works for single-word brand
+                # searches but wrongly rejects real matches for multi-word
+                # phrases, since Vinted's search doesn't require exact
+                # wording/order either — require_any_words/exclude_keywords
+                # below do the actual precision filtering (size, generation,
+                # etc.), same pattern as the Xbox console fix.
+                if kw_first_word and kw_first_word not in title_l:
                     continue
                 if any(x in title_l for x in exclude):
                     continue
