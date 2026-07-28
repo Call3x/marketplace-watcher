@@ -75,6 +75,20 @@ items:
   keywords:
   - seiko
   - casio
+  - orient
+  - citizen
+  - bulova
+  - timex
+  - tissot
+  - certina
+  - swatch
+  - mondaine
+  - polijot
+  - raketa
+  - vostok
+  - lorus
+  - alba
+  - fossil
   require_any_words:
   - montre
   - watch
@@ -109,7 +123,7 @@ items:
   - fx 8
   - fx-9
   price_min: 0
-  price_max: 100
+  price_max: 120
 - id: bmw-330i-f30-lci
   label: "BMW 330i F30 LCI (2017-2019)"
   category: cars
