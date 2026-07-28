@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="top-actions">
+    <h1>New category</h1>
+    <a class="btn" href="{{ url_for('index') }}">← Back</a>
+  </div>
+
+  <p class="field-help" style="margin-bottom:1rem;">
+    A category groups items that use the same kind of search filters (keywords, price
+    range, etc.) and get checked against the same site(s). Existing categories
+    (electronics, watches, cars) already exist and don't need to be recreated — this is
+    for something genuinely new, e.g. "clothing" or "furniture".
+  </p>
+
+  <form class="field-group" method="post" action="{{ url_for('create_category') }}">
+    <div>
+      <label>Category name</label>
+      <input type="text" name="name" required placeholder="e.g. furniture">
+      <p class="field-help">Lowercase, no spaces (dashes are fine) — this becomes the
+        category id used internally.</p>
+    </div>
+
+    <fieldset>
+      <legend>Which site(s) should items in this category be searched on?</legend>
+      {% for key, label in available_sites.items() %}
+        <div class="checkbox-row">
+          <input type="checkbox" name="adapters" value="{{ key }}" id="site-{{ key }}">
+          <label for="site-{{ key }}">{{ label }}</label>
+        </div>
+      {% endfor %}
+      <p class="field-help">New categories get a generic set of filter fields (search
+        keywords, must-contain / must-exclude word lists, price range) — the same ones
+        the "electronics" category uses.</p>
+    </fieldset>
+
+    <div class="actions">
+      <button class="btn primary" type="submit">Create category</button>
+    </div>
+  </form>
+{% endblock %}

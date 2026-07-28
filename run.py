@@ -38,6 +38,9 @@ def run(dry_run: bool = False):
 
     with db.connect() as conn:
         for item in config["items"]:
+            if item.get("enabled", True) is False:
+                print(f"[run] {item['id']} is disabled, skipping")
+                continue
             for adapter_name in item.get("adapters", []):
                 if adapter_name not in ADAPTERS:
                     continue
