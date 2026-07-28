@@ -9,10 +9,11 @@ import os
 import subprocess
 from pathlib import Path
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, session, url_for
 from ruamel.yaml import YAML
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)  # local-only tool, session cookie just needs to survive the process
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
 REPO_DIR = Path(__file__).parent
 
@@ -201,8 +202,15 @@ def text_to_list(text: str) -> list:
     return [line.strip() for line in text.splitlines() if line.strip()]
 
 
+GREETING_NAME = os.environ.get("GREETING_NAME", "Alex")
+
+
 @app.route("/")
 def index():
+    if not session.get("welcomed"):
+        session["welcomed"] = True
+        return render_template("welcome.html", name=GREETING_NAME)
+
     config = load_config()
     return render_template(
         "index.html",
