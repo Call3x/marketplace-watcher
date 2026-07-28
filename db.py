@@ -112,3 +112,28 @@ def log_notification(conn, uid: str, reason: str):
         "INSERT INTO notifications (uid, reason, sent_at) VALUES (?, ?, ?)",
         (uid, reason, now_iso()),
     )
+
+
+def median_price_for_item(conn, item_id: str, exclude_uid: str, min_samples: int = 5) -> float | None:
+    """Median of the first-seen price of every other listing ever recorded for
+    this shopping-list item — used to judge whether a new match is cheap
+    relative to what's historically shown up, not just relative to today's
+    batch. Requires at least min_samples data points, otherwise the median
+    is too noisy to be a meaningful signal and this returns None."""
+    cur = conn.execute(
+        """
+        SELECT MIN(ph.price) FROM price_history ph
+        JOIN listings l ON l.uid = ph.uid
+        WHERE l.item_id = ? AND l.uid != ?
+        GROUP BY ph.uid
+        """,
+        (item_id, exclude_uid),
+    )
+    prices = sorted(row[0] for row in cur.fetchall() if row[0] is not None)
+    if len(prices) < min_samples:
+        return None
+
+    mid = len(prices) // 2
+    if len(prices) % 2 == 0:
+        return (prices[mid - 1] + prices[mid]) / 2
+    return prices[mid]

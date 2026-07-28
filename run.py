@@ -76,8 +76,9 @@ def run(dry_run: bool = False):
         # unusable at 100+ matches for a broad category like watches).
         by_category: dict[str, list] = {}
         for reason, listing, old_price, category, item_label in events:
+            median = db.median_price_for_item(conn, listing.item_id, listing.uid)
             by_category.setdefault(category, []).append(
-                (reason, listing.title, listing.price, listing.url, old_price, item_label)
+                (reason, listing.title, listing.price, listing.url, old_price, item_label, median)
             )
 
         if not dry_run:
