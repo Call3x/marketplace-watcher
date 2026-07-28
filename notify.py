@@ -53,15 +53,32 @@ CATEGORY_ICONS = {
 TELEGRAM_MAX_LEN = 4096
 
 
+def _value_sort_key(entry):
+    """Rank price drops above new listings (a drop is more actionable), and
+    within each group rank by best value first: biggest % discount for
+    drops, cheapest price for new listings. Missing prices sort last."""
+    reason, _title, price, _url, old_price, _item_label = entry
+    is_drop = reason == "price_drop" and old_price
+    group = 0 if is_drop else 1
+
+    if is_drop:
+        discount_pct = (old_price - price) / old_price if old_price else 0
+        return (group, -discount_pct, price if price is not None else float("inf"))
+    return (group, 0, price if price is not None else float("inf"))
+
+
 def format_digest(category: str, category_label: str, entries: list) -> list:
     """entries: list of (reason, title, price, url, old_price, item_label).
     Returns a list of message strings — usually one, split into more only if
     it would exceed Telegram's 4096-char message limit. If entries come from
     more than one distinct shopping-list item, each line is prefixed with
-    that item's label so a merged digest doesn't lose which item matched."""
+    that item's label so a merged digest doesn't lose which item matched.
+    Entries are ranked by value: price drops first (biggest discount % at
+    the top), then new listings cheapest-first."""
     icon = CATEGORY_ICONS.get(category, "🔎")
     header = f"{icon} <b>{category_label}</b> — {len(entries)} update{'s' if len(entries) != 1 else ''}\n"
 
+    entries = sorted(entries, key=_value_sort_key)
     distinct_items = {item_label for *_rest, item_label in entries}
     show_item_label = len(distinct_items) > 1
 
