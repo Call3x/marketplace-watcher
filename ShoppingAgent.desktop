@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ShoppingAgent
+Comment=Open the marketplace-watcher shopping list editor
+Exec=/home/callex/marketplace-watcher/run_gui.sh
+Icon=shopping-agent
+Terminal=false
+Categories=Utility;
+StartupNotify=true
