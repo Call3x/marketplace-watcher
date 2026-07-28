@@ -41,12 +41,17 @@ You can also trigger a run manually any time from the GitHub UI (Actions tab
 ### Option A: the GUI (recommended for day-to-day changes)
 
 ```
-python3 gui.py
+./run_gui.sh
 ```
-Open http://localhost:5000 in a browser. Add/edit/delete items with a form
-— fields adapt per category (electronics/watches vs. cars). **Saving commits
-and pushes `config.yaml` to GitHub automatically** — the next scheduled
-Actions run picks up the new filters, no extra step needed.
+or double-click the **ShoppingAgent** icon on the Desktop / in the app menu
+(installed via `./install_desktop_shortcut.sh`, one-time setup — copies an
+icon and a `.desktop` launcher into `~/.local/share/applications/` and
+`~/Desktop/`). Opens http://localhost:5000 in your browser automatically.
+
+Add/edit/delete items with a form — fields adapt per category
+(electronics/watches vs. cars). **Saving commits and pushes `config.yaml`
+to GitHub automatically** — the next scheduled Actions run picks up the
+new filters, no extra step needed.
 
 Requires `flask` and `ruamel.yaml` (already installed on this machine via
 `pip3 install --break-system-packages --user -r requirements-gui.txt`).
