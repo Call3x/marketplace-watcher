@@ -9,9 +9,16 @@ on:
     #
     # Scheduled at :17 rather than :00 — GitHub queues everyone's on-the-hour
     # cron jobs together and can delay them by hours under load; an off-peak
-    # minute usually starts within a few minutes of the scheduled time. Even
-    # so, GitHub does not guarantee exact timing for free-tier scheduled
-    # workflows — treat this as "sometime around" 8am/8pm, not a precise alarm.
+    # minute usually starts closer to the scheduled time.
+    #
+    # This repo was made public on 2026-07-28 specifically to fix repeated
+    # 2+ hour scheduling delays (twice observed: 08:27 UTC for a 06:17
+    # target, and the 18:17 evening run never firing on its own at all).
+    # GitHub deprioritizes scheduled workflow triggers on PRIVATE repos on
+    # the free tier — this is documented behavior, not a config bug, and
+    # was the actual root cause. Public repos get full scheduling priority.
+    # If this repo is ever made private again, expect the multi-hour delays
+    # to come back.
     - cron: "17 6 * * *"
     - cron: "17 18 * * *"
   workflow_dispatch: {}   # allows manual "Run workflow" button in GitHub UI
