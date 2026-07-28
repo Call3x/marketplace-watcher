@@ -3,6 +3,7 @@
   <div class="top-actions">
     <h1>Shopping list</h1>
     <div class="actions">
+      <a class="btn" href="{{ url_for('replay_welcome') }}" title="Show the welcome greeting again">↺ Intro</a>
       <form method="post" action="{{ url_for('run_now') }}" onsubmit="this.querySelector('button').textContent='Running… (up to 15 min)'; this.querySelector('button').disabled=true;">
         <button class="btn" type="submit">▶ Run now</button>
       </form>

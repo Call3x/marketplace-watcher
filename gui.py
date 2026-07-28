@@ -219,6 +219,12 @@ def index():
     )
 
 
+@app.route("/welcome")
+def replay_welcome():
+    """Force-show the welcome screen again, ignoring the once-per-session flag."""
+    return render_template("welcome.html", name=GREETING_NAME)
+
+
 @app.route("/item/new", methods=["GET"])
 @app.route("/item/<item_id>/edit", methods=["GET"])
 def edit_item(item_id=None):
