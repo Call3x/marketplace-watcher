@@ -124,6 +124,7 @@ items:
   - fx-9
   price_min: 0
   price_max: 120
+  enabled: false
 - id: bmw-330i-f30-lci
   label: "BMW 330i F30 LCI (2017-2019)"
   category: cars
