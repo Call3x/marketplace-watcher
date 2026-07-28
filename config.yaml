@@ -62,7 +62,7 @@ items:
   - harry potter
   - callisto protocol
   price_min: 0
-  price_max: 350
+  price_max: 450
 - id: watches-seiko-casio
   label: Seiko / Casio watches (date, day-date complications)
   category: watches
