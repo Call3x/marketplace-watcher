@@ -2,12 +2,18 @@ name: marketplace-watch
 
 on:
   schedule:
-    # 8am and 8pm Europe/Paris. GitHub Actions cron is UTC and does not
+    # ~8am and ~8pm Europe/Paris. GitHub Actions cron is UTC and does not
     # follow DST, so these are CEST (UTC+2, summer) times. In winter (CET,
     # UTC+1) actual runs land an hour later than intended (9am/9pm). Adjust
     # by 1 hour around late Oct / late Mar if that drift matters to you.
-    - cron: "0 6 * * *"
-    - cron: "0 18 * * *"
+    #
+    # Scheduled at :17 rather than :00 — GitHub queues everyone's on-the-hour
+    # cron jobs together and can delay them by hours under load; an off-peak
+    # minute usually starts within a few minutes of the scheduled time. Even
+    # so, GitHub does not guarantee exact timing for free-tier scheduled
+    # workflows — treat this as "sometime around" 8am/8pm, not a precise alarm.
+    - cron: "17 6 * * *"
+    - cron: "17 18 * * *"
   workflow_dispatch: {}   # allows manual "Run workflow" button in GitHub UI
 
 permissions:

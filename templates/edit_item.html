@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="top-actions">
+    <h1>{{ 'Edit item' if item else 'Add item' }}</h1>
+    <a class="btn" href="{{ url_for('index') }}">← Back</a>
+  </div>
+
+  <form class="field-group" method="get" action="{{ url_for('edit_item', item_id=item.id if item else None) }}">
+    <div>
+      <label>Category <span class="hint">(changing this reloads the form with the right fields)</span></label>
+      <select name="category" onchange="this.form.submit()">
+        {% for c in all_categories %}
+          <option value="{{ c }}" {{ 'selected' if c == category else '' }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  <form class="field-group" method="post" action="{{ url_for('save_item') }}">
+    <input type="hidden" name="category" value="{{ category }}">
+    <input type="hidden" name="is_new" value="{{ '0' if item else '1' }}">
+    <input type="hidden" name="original_id" value="{{ item.id if item else '' }}">
+
+    <div>
+      <label>Item ID <span class="hint">(short unique slug, e.g. xbox-series-x)</span></label>
+      <input type="text" name="id" value="{{ item.id if item else '' }}" required>
+    </div>
+
+    <div>
+      <label>Label <span class="hint">(human-readable name shown in the list)</span></label>
+      <input type="text" name="label" value="{{ item.label if item else '' }}">
+    </div>
+
+    {% for key, field_label, input_type in fields %}
+      <div>
+        <label>{{ field_label }}</label>
+        {% if input_type == 'list' %}
+          <textarea name="{{ key }}">{{ list_to_text(item[key]) if item and item.get(key) else '' }}</textarea>
+        {% elif input_type == 'number' %}
+          <input type="number" name="{{ key }}" value="{{ item[key] if item and item.get(key) is not none else '' }}">
+        {% else %}
+          <input type="text" name="{{ key }}" value="{{ item[key] if item and item.get(key) else '' }}">
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <div class="actions">
+      <button class="btn primary" type="submit">Save &amp; push to GitHub</button>
+    </div>
+  </form>
+{% endblock %}
