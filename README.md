@@ -4,7 +4,9 @@ Scans your shopping list against second-hand marketplaces, tracks price
 history in SQLite, and sends new listings / price drops to Telegram.
 Runs on a schedule via GitHub Actions — no need for your laptop to be on.
 
-Repo: https://github.com/Call3x/marketplace-watcher (private)
+Repo: https://github.com/Call3x/marketplace-watcher (**public** — see "How
+scheduling works now" for why; nothing sensitive is in the repo, Telegram
+credentials live only in GitHub Secrets and the local gitignored `.env`)
 
 ## Sites covered
 
@@ -20,11 +22,19 @@ Repo: https://github.com/Call3x/marketplace-watcher (private)
 
 The scraper runs on **GitHub Actions**, not this laptop — see
 `.github/workflows/watch.yml`. It fires roughly twice a day (around 8am and
-8pm Europe/Paris, scheduled at :17 past the hour rather than :00 since
-GitHub's free tier queues on-the-hour jobs together and can delay them by
-hours; :17 usually starts within a few minutes of the scheduled time — but
-GitHub does not guarantee exact timing, treat it as "sometime around" rather
-than a precise alarm).
+8pm Europe/Paris, scheduled at :17 past the hour rather than :00 to avoid
+the worst of GitHub's on-the-hour scheduling congestion).
+
+**The repo is public specifically because of this.** GitHub Actions
+deprioritizes scheduled ("cron") triggers on *private* repos on the free
+tier — this showed up as repeated 2+ hour delays (one morning run fired
+over 2 hours late, one evening run never fired on its own at all and had to
+be triggered manually). Making the repo public on 2026-07-28 fixed this —
+public repos get full scheduling priority. If this repo is ever made
+private again, expect the delays to come back. GitHub still does not
+guarantee exact-minute timing even for public repos — treat it as
+"sometime around" 8am/8pm, not a precise alarm, just a much tighter window
+than before.
 
 After each run, the workflow commits the updated `data/watcher.db` (price
 history) back to the `main` branch, so state persists across runs even
