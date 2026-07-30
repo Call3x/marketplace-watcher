@@ -49,6 +49,7 @@ def search(item: dict, countries: list[str]) -> list[Listing]:
     exclude = [w.lower() for w in item.get("exclude_keywords", [])]
     require_all = [w.lower() for w in item.get("require_all_words", [])]
     require_any = [w.lower() for w in item.get("require_any_words", [])]
+    require_any_brand = [w.lower() for w in item.get("require_any_brand", [])]
     price_max = item.get("price_max")
     price_min = item.get("price_min", 0)
 
@@ -95,6 +96,14 @@ def search(item: dict, countries: list[str]) -> list[Listing]:
                 if require_all and not all(_word_matches(w, title_l) for w in require_all):
                     continue
                 if require_any and not any(_word_matches(w, title_l) for w in require_any):
+                    continue
+                # require_any_brand is a separate AND-condition from
+                # require_any (size vs. brand): a listing must match a size
+                # signal AND a brand signal, not either/or. Uses the same
+                # word-boundary matcher as require_any/require_all so short
+                # brand names (e.g. "asics", "boss", "dime") don't
+                # false-positive on substrings like "Basics" or "Bossy".
+                if require_any_brand and not any(_word_matches(b, title_l) for b in require_any_brand):
                     continue
 
                 price = float(raw["price"]["amount"]) if raw.get("price") else None
