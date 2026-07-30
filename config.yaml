@@ -11,6 +11,51 @@ settings:
     clothing:
       adapters:
       - vinted
+
+  # Streetwear/heritage brand allowlist shared by all clothing items below —
+  # a listing must mention one of these brands (in the title) in addition to
+  # matching the size signal. Kept as one shared anchor so it's edited in
+  # one place instead of four.
+  clothing_brands: &clothing_brands
+  - corteiz
+  - carhartt
+  - stussy
+  - stüssy
+  - supreme
+  - palace
+  - stone island
+  - c.p. company
+  - cp company
+  - represent
+  - fear of god
+  - essentials
+  - kith
+  - aime leon dore
+  - aimé leon dore
+  - levi's
+  - levis
+  - diesel
+  - dickies
+  - g-star
+  - calvin klein
+  - hugo boss
+  - boss
+  - tommy hilfiger
+  - ralph lauren
+  - lacoste
+  - arc'teryx
+  - arcteryx
+  - patagonia
+  - north face
+  - nike
+  - jordan
+  - new balance
+  - adidas
+  - asics
+  - salomon
+  - polar skate
+  - dime
+  - butter goods
 items:
 - id: xbox-console
   label: Xbox Console (any generation)
@@ -167,6 +212,7 @@ items:
   label: "Men's pants/jeans (W34 L34)"
   category: clothing
   adapters: [vinted]
+  require_any_brand: *clothing_brands
   # Size-specific search terms so Vinted's own ranking surfaces relevant
   # results within the fixed 40-result window (a bare "pantalon homme"
   # search returns 40 recent listings of every size, most not W34/L34).
@@ -206,6 +252,7 @@ items:
   label: "Men's T-shirts (size L)"
   category: clothing
   adapters: [vinted]
+  require_any_brand: *clothing_brands
   keywords:
   - t-shirt homme taille l
   - tshirt homme l
@@ -233,6 +280,7 @@ items:
   label: "Men's Hoodies (size L)"
   category: clothing
   adapters: [vinted]
+  require_any_brand: *clothing_brands
   keywords:
   - hoodie homme taille l
   - sweat à capuche homme taille l
@@ -260,6 +308,7 @@ items:
   label: "Men's Jumpers/Sweaters (size L)"
   category: clothing
   adapters: [vinted]
+  require_any_brand: *clothing_brands
   keywords:
   - pull homme taille l
   - jumper men l
